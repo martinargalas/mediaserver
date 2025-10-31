@@ -7,7 +7,7 @@ Tento repozitář obsahuje anonymizovanou a připravenou verzi README pro *Home 
 ---
 
 ## 🚀 Co tento repozitář obsahuje
-- Anonymizovaný `docker-compose.yml` s následujícími kontejnery (počet kontejnerů zachován):
+- Anonymizovaný `docker-compose.yml` s následujícími kontejnery:
   - gluetun (VPN)
   - sabnzbd + sabnzbd-proxy
   - sonarr + sonarr-proxy

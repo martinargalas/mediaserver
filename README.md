@@ -1,48 +1,37 @@
-# 🧩 Home Media Stack (anonymized)
+# 🧩 Home Media Stack (Anonymized)
 
-Tento repozitář obsahuje anonymizovanou a připravenou verzi README pro *Home Media Stack* — domácí server pro automatizované stahování a správu filmů a seriálů, postavený na Docker Compose s Traefikem, Gluetun VPN a Pi-hole.
+This repository provides an **anonymized, production-ready Home Media Stack** — a self-hosted solution for **automated movie and TV show management** using Docker Compose with **Traefik**, **Gluetun VPN**, and **Pi-hole**.
 
-> **Poznámka:** Všechny citlivé údaje (uživatelská jména, hesla, API klíče, cesty k volumes) byly nahrazeny placeholdery. Před nasazením doplňte soubor `.env` a upravte cesty podle vašeho systému.
-
----
-
-## 🚀 Co tento repozitář obsahuje
-- Anonymizovaný `docker-compose.yml` s následujícími kontejnery:
-  - gluetun (VPN)
-  - sabnzbd + sabnzbd-proxy
-  - sonarr + sonarr-proxy
-  - radarr + radarr-proxy
-  - prowlarr + prowlarr-proxy
-  - bazarr + bazarr-proxy
-  - overseerr
-  - traefik
-- Pokyny pro spuštění a nastavení interního DNS (Pi-hole není součástí tohoto compose; nastavte ho samostatně nebo použijte existující instanci).
+> 🧠 All sensitive data (usernames, passwords, API keys, volume paths) have been replaced with placeholders. You’ll need to fill them in locally before deployment.
 
 ---
 
-## 🔒 Bezpečnost a citlivá data
-- Uložte všechna citlivá data do souboru `.env`.
-- Příklady proměnných v `.env`:
+## 🚀 Overview
+This stack brings together:
+- **Traefik** – Reverse proxy and internal routing via DNS hostnames
+- **Gluetun (VPN)** – Privacy layer using Surfshark or any custom OpenVPN configuration
+- **Usenet tools** – Sonarr, Radarr, SABnzbd, Prowlarr
+- **Subtitle management** – Bazarr
+- **Request system** – Overseerr
+- **Optional Pi-hole DNS** – For ad blocking and internal `.lab` domain resolution
 
-```env
-# VPN
-OPENVPN_USER=your_vpn_user
-OPENVPN_PASSWORD=your_vpn_password
-OPENVPN_CUSTOM_CONFIG=/gluetun/surfshark.ovpn
+All components are containerized for easy management and isolation.
 
-# Obecné
-TZ=Europe/Prague
-PUID=1000
-PGID=1000
+---
+
+## 💻 Hardware & Environment
+This setup runs smoothly on:
+- **Mac Mini (Apple Silicon, ARM64)** or any low-power home server
+- **OS:** macOS Sonoma (or Linux)
+- **Docker Engine:** Native mode (no VM layer required)
+
+Plex is intentionally **not containerized** in this setup due to performance issues with hardware transcoding over virtualized networking on macOS (e.g., OrbStack). Run Plex directly on the host machine.
+
+---
+
+## ⚙️ Architecture
 ```
-
----
-
-## 🧭 Síťová architektura (přehled)
-Stack běží v lokální síti s reverzní proxy (Traefik) a oddělenou sítí pro služby směrované přes VPN (gluetun-net). Traefik vystavuje služby přes interní DNS názvy (např. `sonarr.lab`).
-
-```
-Lokální síť (LAN)
+Local Network (LAN)
         │
         ▼
    [ Traefik Proxy ]
@@ -55,72 +44,104 @@ Sonarr  Radarr  Sabnzbd  Prowlarr          Pi-hole DNS
  │       └────────┴─────────┴───────────────────┘
  │
  ▼
- [ Gluetun VPN ]
+ [ Gluetun VPN (Surfshark) ]
 ```
 
 ---
 
-## 📌 Služby a standardní porty (anonymizováno)
-| Služba | Port | Popis |
-|---|---:|---|
-| Sonarr | `8989` | Správa seriálů |
-| Radarr | `7878` | Správa filmů |
-| SABnzbd | `8081` | NZB download klient |
-| Prowlarr | `9696` | Indexery |
-| Bazarr | `6767` | Titulky a správa titulků |
-| Overseerr | `5055` | Žádanky na obsah |
-| Traefik dashboard | `8085` | Admin dashboard |
-
-> Traefik směruje požadavky na tyto služby přes interní DNS (např. `sonarr.lab`).
+## 🧱 Networks
+- **traefik-net** – Main network for Traefik and services exposed via internal DNS
+- **gluetun-net** – Isolated VPN network for Sonarr, Radarr, SABnzbd, Prowlarr, and Bazarr
 
 ---
 
-## 💰 Měsíční náklady (říjen 2025)
-| Služba | Popis | Cena / měsíc |
-|---|---|---:|
-| Surfshark VPN | VPN připojení | **65 Kč** |
-| Thundernews | Usenet přístup | **279 Kč** |
-| Titulky.com VIP | Přístup k titulkovým databázím | **27 Kč** |
-| Plex Pass (volitelné) | Prémiové funkce Plexu | **151 Kč** |
+## 🧩 Services & Default Ports
+| Service | Port | Description |
+|----------|------|-------------|
+| **Sonarr** | 8989 | TV show management and automation |
+| **Radarr** | 7878 | Movie management and automation |
+| **SABnzbd** | 8081 | NZB download client |
+| **Prowlarr** | 9696 | Unified indexer manager |
+| **Bazarr** | 6767 | Subtitle management |
+| **Overseerr** | 5055 | Request management and Plex integration |
+| **Traefik Dashboard** | 8085 | Web UI for Traefik monitoring |
 
-**Celkem (bez Plex Passu):** **371 Kč / měsíc**  
-**Celkem (s Plex Pass):** **522 Kč / měsíc**
+Each service is accessible through **internal DNS** (managed by Pi-hole), e.g., `http://sonarr.lab`, `http://radarr.lab`, etc.
 
 ---
 
-## 🧭 Spuštění (rychlý návod)
-1. Naklonujte repozitář a přejděte do složky:
+## 🔐 VPN & Privacy Layer
+**Gluetun** tunnels traffic from Sonarr, Radarr, SABnzbd, Prowlarr, and Bazarr through a secure VPN connection.
 
+### Example `.env` configuration
+```env
+# VPN credentials
+OPENVPN_USER=your_vpn_username
+OPENVPN_PASSWORD=your_vpn_password
+OPENVPN_CUSTOM_CONFIG=/gluetun/surfshark.ovpn
+
+# General settings
+TZ=Europe/Prague
+PUID=1000
+PGID=1000
+```
+
+Ensure your `.env` file is **never committed** to your GitHub repository.
+
+---
+
+## 💰 Monthly Cost Estimate (October 2025)
+| Service | Description | Cost / Month |
+|----------|--------------|---------------:|
+| **Surfshark VPN** | VPN provider | **€2.60 (≈65 CZK)** |
+| **Thundernews** | Usenet access | **€11.10 (≈279 CZK)** |
+| **Titulky.com VIP** | Subtitle provider | **€1.10 (≈27 CZK)** |
+| **Plex Pass** *(optional)* | Plex premium features | **€6.00 (≈151 CZK)** |
+
+**Total (without Plex Pass):** €14.80 / month (≈371 CZK)  
+**Total (with Plex Pass):** €20.80 / month (≈522 CZK)
+
+---
+
+## 🧭 Quick Start Guide
+1️⃣ **Clone the repository**
 ```bash
-git clone https://github.com/<tvoje-repo>/home-media-stack.git
+git clone https://github.com/<your-username>/home-media-stack.git
 cd home-media-stack
 ```
 
-2. Vytvořte `.env` podle příkladu výše a upravte cesty (`./config/...`) pokud je třeba.
+2️⃣ **Create and fill your `.env` file** (see example above)
 
-3. Spusťte stack:
-
+3️⃣ **Start the containers**
 ```bash
 docker compose -f docker-compose.anonymized.yml up -d
 ```
 
-4. Přístup k aplikacím přes interní DNS (přizpůsobte podle Pi-hole):
+4️⃣ **Access your applications** (via Pi-hole DNS)
 - `http://sonarr.lab`
 - `http://radarr.lab`
 - `http://sabnzbd.lab`
 - `http://prowlarr.lab`
 - `http://bazarr.lab`
 - `http://overseerr.lab`
-- `http://traefik.lab:8085` (Traefik dashboard)
+- `http://traefik.lab:8085` (Traefik Dashboard)
 
 ---
 
-## 🧾 Poznámky k úpravám
-- Cesty k volumes byly změněny na relativní (`./config/...`) — upravte je podle vašeho Macu.
-- Všechny skutečné přihlašovací údaje, API klíče a soubory OVPN byly nahrazeny placeholdery.
-- Pokud provozujete Plex mimo Docker (na hostu), ponechte jej mimo tento compose; přidejte `plex.lab` záznam do Pi-hole.
+## 🧰 Notes & Recommendations
+- Use **Pi-hole** or another local DNS solution to resolve internal `.lab` domains.
+- All **media directories** (`./media/...`) and **config folders** (`./config/...`) are relative — adjust paths to your system.
+- Run **Plex directly on the host machine** (not in Docker) for better transcoding performance on macOS.
+- Never expose Traefik or Gluetun directly to the internet without authentication or TLS.
 
 ---
 
-© 2025 Home Media Stack (anonymized) by Martin Argalaš
+## 🧾 Repository Files
+- `docker-compose.anonymized.yml` – Main Docker Compose file (anonymized)
+- `.env.example` – Template for environment variables
+- `README.md` – This documentation file
+
+---
+
+© 2025 Home Media Stack (Anonymized) by Martin Argalaš
 

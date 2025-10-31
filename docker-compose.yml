@@ -1,154 +1,251 @@
 version: "3.9"
 
-#########################
-# Networks              #
-#########################
 networks:
   traefik-net:
     external: true
   gluetun-net:
     driver: bridge
 
-#########################
-# Services              #
-#########################
 services:
-  #########################
-  # VPN (Gluetun)
-  #########################
   gluetun:
     image: qmcgaw/gluetun
     container_name: gluetun
     cap_add:
       - NET_ADMIN
     devices:
-      - /dev/net/tun
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./config/gluetun:/gluetun
     environment:
       - VPN_SERVICE_PROVIDER=custom
-      - OPENVPN_USER=${VPN_USER}
-      - OPENVPN_PASSWORD=${VPN_PASSWORD}
-      - TZ=Europe/Prague
-    volumes:
-      - /Users/martinargalas/docker/gluetun:/gluetun
-    ports:
-      - "8080:8080"       # qBittorrent web UI
-      - "8081:8081"       # Sabnzbd web UI
-      - "8989:8989"       # Sonarr
-      - "7878:7878"       # Radarr
-      - "9696:9696"       # Prowlarr
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - OPENVPN_CUSTOM_CONFIG=/gluetun/surfshark.ovpn
+      - TZ=${TZ}
+    # Neexportujeme interní porty veřejně - přístup přes socat-proxy + Traefik
     networks:
+      - traefik-net
       - gluetun-net
+    restart: unless-stopped
+
+  #######################
+  # SABnzbd
+  #######################
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK_SET=022
+    volumes:
+      - ./config/sabnzbd:/config
+      - ./downloads:/downloads
+      - ./media/movies:/movies
+      - ./media/tv:/tv
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+
+  #######################
+  # SABnzbd Proxy (pro Traefik) -> standardní port 8081
+  #######################
+  sabnzbd-proxy:
+    image: alpine/socat
+    container_name: sabnzbd-proxy
+    command: "TCP-LISTEN:8081,fork TCP:gluetun:8080"
+    networks:
       - traefik-net
     restart: unless-stopped
-
-  #########################
-  # Sonarr
-  #########################
-  sonarr:
-    image: linuxserver/sonarr
-    container_name: sonarr
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Prague
-    volumes:
-      - /Users/martinargalas/docker/sonarr:/config
-      - /Volumes/Data/media:/media
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.sonarr.rule=Host(`sonarr.lab`)"
-      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
     depends_on:
       - gluetun
-    restart: unless-stopped
-
-  #########################
-  # Radarr
-  #########################
-  radarr:
-    image: linuxserver/radarr
-    container_name: radarr
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Prague
-    volumes:
-      - /Users/martinargalas/docker/radarr:/config
-      - /Volumes/Data/media:/media
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.radarr.rule=Host(`radarr.lab`)"
-      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
-    depends_on:
-      - gluetun
-    restart: unless-stopped
-
-  #########################
-  # Sabnzbd
-  #########################
-  sabnzbd:
-    image: linuxserver/sabnzbd
-    container_name: sabnzbd
-    network_mode: "service:gluetun"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Prague
-    volumes:
-      - /Users/martinargalas/docker/sabnzbd:/config
-      - /Volumes/Data/downloads:/downloads
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sabnzbd.rule=Host(`sabnzbd.lab`)"
+      - "traefik.http.routers.sabnzbd.entrypoints=web"
       - "traefik.http.services.sabnzbd.loadbalancer.server.port=8081"
+
+  #######################
+  # Sonarr
+  #######################
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/sonarr:/config
+      - ./media/tv:/tv
+      - ./downloads:/downloads
+    restart: unless-stopped
     depends_on:
       - gluetun
-    restart: unless-stopped
 
-  #########################
+  sonarr-proxy:
+    image: alpine/socat
+    container_name: sonarr-proxy
+    command: "TCP-LISTEN:8989,fork TCP:gluetun:8989"
+    networks:
+      - traefik-net
+    restart: unless-stopped
+    depends_on:
+      - gluetun
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.lab`)"
+      - "traefik.http.routers.sonarr.entrypoints=web"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+
+  #######################
+  # Radarr
+  #######################
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/radarr:/config
+      - ./media/movies:/movies
+      - ./downloads:/downloads
+    restart: unless-stopped
+    depends_on:
+      - gluetun
+
+  radarr-proxy:
+    image: alpine/socat
+    container_name: radarr-proxy
+    command: "TCP-LISTEN:7878,fork TCP:gluetun:7878"
+    networks:
+      - traefik-net
+    restart: unless-stopped
+    depends_on:
+      - gluetun
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.lab`)"
+      - "traefik.http.routers.radarr.entrypoints=web"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+
+  #######################
+  # Overseerr
+  #######################
+  overseerr:
+    image: sctx/overseerr:latest
+    container_name: overseerr
+    networks:
+      - traefik-net
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ./config/overseerr:/app/config
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net"
+      - "traefik.http.routers.overseerr.rule=Host(`overseerr.lab`)"
+      - "traefik.http.routers.overseerr.entrypoints=web"
+      - "traefik.http.services.overseerr.loadbalancer.server.port=5055"
+    restart: unless-stopped
+    depends_on:
+      - gluetun
+
+  #######################
+  # Traefik
+  #######################
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.dashboard.address=:8085"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8085:8085"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik:/etc/traefik
+    networks:
+      - traefik-net
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.lab`)"
+      - "traefik.http.routers.dashboard.entrypoints=dashboard"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  #######################
   # Prowlarr
-  #########################
+  #######################
   prowlarr:
-    image: linuxserver/prowlarr
+    image: lscr.io/linuxserver/prowlarr:develop
     container_name: prowlarr
     network_mode: "service:gluetun"
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Prague
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
-      - /Users/martinargalas/docker/prowlarr:/config
+      - ./config/prowlarr:/config
+    restart: unless-stopped
+    depends_on:
+      - gluetun
+
+  prowlarr-proxy:
+    image: alpine/socat
+    container_name: prowlarr-proxy
+    command: "TCP-LISTEN:9696,fork TCP:gluetun:9696"
+    networks:
+      - traefik-net
+    restart: unless-stopped
+    depends_on:
+      - gluetun
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.lab`)"
+      - "traefik.http.routers.prowlarr.entrypoints=web"
       - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
-    depends_on:
-      - gluetun
+
+  #######################
+  # Bazarr
+  #######################
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ./config/bazarr:/config
+      - ./media/tv:/tv
+      - ./media/movies:/movies
     restart: unless-stopped
 
-  #########################
-  # Pi-hole
-  #########################
-  pihole:
-    image: pihole/pihole:latest
-    container_name: pihole
-    hostname: pihole
-    environment:
-      - TZ=Europe/Prague
-      - WEBPASSWORD=admin
-    volumes:
-      - /Users/martinargalas/docker/pihole/etc-pihole:/etc/pihole
-      - /Users/martinargalas/docker/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+  bazarr-proxy:
+    image: alpine/socat
+    container_name: bazarr-proxy
+    command: "TCP-LISTEN:6767,fork TCP:gluetun:6767"
     networks:
       - traefik-net
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "8082:80" # pihole web UI
+    restart: unless-stopped
+    depends_on:
+      - gluetun
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pihole.rule=Host(`pihole.lab`)"
-      - "traefik.http.services.pihole.loadbalancer.server.port=80"
-    restart: unless-stopped
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.lab`)"
+      - "traefik.http.routers.bazarr.entrypoints=web"
+      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"

@@ -21,7 +21,7 @@ Tento repozitář obsahuje anonymizovanou a připravenou verzi README pro *Home 
 ---
 
 ## 🔒 Bezpečnost a citlivá data
-- Uložte všechna citlivá data do souboru `.env` a **nikdy** je necommitujte do GitHubu.
+- Uložte všechna citlivá data do souboru `.env`.
 - Příklady proměnných v `.env`:
 
 ```env

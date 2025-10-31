@@ -1,101 +1,110 @@
-# Media Server Stack (Docker Compose)
+# 🧩 Home Media Stack with Traefik, Gluetun VPN, and Pi-hole
 
-Tento stack kombinuje oblíbené aplikace pro automatizaci stahování a správy médií (Sonarr, Radarr, Bazarr, Prowlarr, SABnzbd, Overseerr) za použití VPN přes Gluetun a reverzního proxy Traefik.
-
-Celý systém je připraven tak, aby:
-- Byl bezpečně připojen k internetu přes VPN (např. Surfshark),
-- Byl přístupný v lokální síti přes **DNS názvy spravované Pi-hole** (např. `sonarr.lab`, `radarr.lab`, `traefik.lab`),
-- Byl snadno rozšiřitelný o další kontejnery.
+Tento stack poskytuje kompletní prostředí pro **automatizované stahování a správu filmů a seriálů** s důrazem na:
+- **Soukromí** (přes Gluetun VPN)
+- **Interní DNS** (přes Pi-hole)
+- **Centralizovaný přístup** (přes Traefik a interní DNS domény)
 
 ---
 
-## ⚙️ Služby
+## ⚙️ Architektura
 
-| Aplikace | Popis | Výchozí port | Přístup přes DNS |
-|-----------|--------|---------------|------------------|
-| **Traefik** | Reverzní proxy + dashboard | `8085` | `http://traefik.lab` |
-| **Gluetun** | VPN gateway pro všechny ostatní kontejnery | — | — |
-| **SABnzbd** | Stahování z Usenetu | `8080` | `http://sabnzbd.lab` |
-| **Sonarr** | TV seriály | `8989` | `http://sonarr.lab` |
-| **Radarr** | Filmy | `7878` | `http://radarr.lab` |
-| **Bazarr** | Titulky | `6767` | `http://bazarr.lab` |
-| **Prowlarr** | Indexery | `9696` | `http://prowlarr.lab` |
-| **Overseerr** | Požadavky od uživatelů | `5055` | `http://overseerr.lab` |
+### Přehled
+```
+Lokální síť (LAN)
+        │
+        ▼
+   [ Traefik Proxy ]
+        │
+ ┌──────┼────────────────────────────────────────┐
+ │      │                                        │
+ ▼      ▼                                        ▼
+Sonarr  Radarr  Sabnzbd  Prowlarr          Pi-hole DNS
+ │       │        │         │                   │
+ │       └────────┴─────────┴───────────────────┘
+ │
+ ▼
+ [ Gluetun VPN ]
+```
 
----
+### Popis služeb
 
-## 🧩 Struktura adresářů
-
-Před spuštěním si vytvořte následující strukturu složek (můžete upravit dle potřeby):
-
-MediaServer/
-├─ config/
-│ ├─ gluetun/
-│ ├─ sabnzbd/
-│ ├─ sonarr/
-│ ├─ radarr/
-│ ├─ prowlarr/
-│ ├─ bazarr/
-│ └─ overseerr/
-├─ Filmy/
-├─ Seriály/
-└─ Temp/
-
+| Služba     | Port | Přístup přes DNS        | Účel |
+|-------------|------|-------------------------|------|
+| **Sonarr**  | 8989 | [http://sonarr.lab](http://sonarr.lab) | Správa a automatické stahování seriálů |
+| **Radarr**  | 7878 | [http://radarr.lab](http://radarr.lab) | Správa a automatické stahování filmů |
+| **Sabnzbd** | 8081 | [http://sabnzbd.lab](http://sabnzbd.lab) | Download klient pro NZB |
+| **Prowlarr**| 9696 | [http://prowlarr.lab](http://prowlarr.lab) | Centrální indexery pro Sonarr/Radarr |
+| **Pi-hole** | 8082 | [http://pihole.lab](http://pihole.lab) | DNS resolver, blokování reklam, správa interních domén |
+| **Gluetun** | —    | —                       | VPN vrstva pro ochranu soukromí |
 
 ---
 
-## 🔑 Proměnné k doplnění
+## 🧱 Sítě
 
-V `docker-compose.yml` doplňte:
-
-| Proměnná | Popis |
-|-----------|--------|
-| `<zde_vložte_své_vpn_uživatelské_jméno>` | Uživatelské jméno pro VPN |
-| `<zde_vložte_své_vpn_heslo>` | Heslo k VPN |
-| `<zde_vložte_název_souboru_ovpn>` | Název `.ovpn` konfigurace vašeho VPN poskytovatele |
-| `<zde_vložte_uid>` / `<zde_vložte_gid>` | UID/GID uživatele, pod kterým běží Docker (např. 1000/1000) |
-| `<zde_vložte_cestu_...>` | Lokální cesty na hostiteli (např. `/home/user/MediaServer/...`) |
+- **traefik-net** – hlavní síť pro reverzní proxy (Traefik + Pi-hole)
+- **gluetun-net** – izolovaná síť pro služby běžící za VPN (Sonarr, Radarr, Sabnzbd, Prowlarr)
 
 ---
 
-## 🚀 Spuštění
+## 🔒 VPN (Gluetun)
 
+Gluetun směruje síťový provoz služeb **Sonarr, Radarr, Sabnzbd, Prowlarr** přes VPN.
+Do `.env` souboru přidej přihlašovací údaje pro OpenVPN:
+
+```env
+VPN_USER=tvuj_vpn_uzivatel
+VPN_PASSWORD=tvuj_vpn_heslo
+```
+
+---
+
+## 🌐 Pi-hole a interní DNS
+
+Pi-hole běží na portu `8082` a kromě blokování reklam poskytuje interní DNS pro přístup ke službám:
+
+| Doména | IP (Pi-hole nastaví automaticky nebo ručně) |
+|---------|---------------------------------------------|
+| sonarr.lab | 192.168.1.x |
+| radarr.lab | 192.168.1.x |
+| sabnzbd.lab | 192.168.1.x |
+| prowlarr.lab | 192.168.1.x |
+| pihole.lab | 192.168.1.x |
+
+> 💡 V Pi-hole otevři **Local DNS → DNS Records** a přidej jednotlivé názvy, které budou směřovat na IP stroje, kde běží Docker.
+
+---
+
+## 🧭 Spuštění
+
+### 1️⃣ Klonování projektu
+```bash
+git clone https://github.com/<tvoje-repo>/home-media-stack.git
+cd home-media-stack
+```
+
+### 2️⃣ Nastavení proměnných
+Vytvoř `.env` soubor (pokud ještě neexistuje):
+```bash
+VPN_USER=tvuj_vpn_uzivatel
+VPN_PASSWORD=tvuj_vpn_heslo
+TZ=Europe/Prague
+```
+
+### 3️⃣ Spuštění kontejnerů
 ```bash
 docker compose up -d
+```
 
-Poté budete moci přistupovat k aplikacím přes své lokální DNS (např. přes Pi-hole), např.:
+---
 
-http://sonarr.lab
-http://radarr.lab
-http://prowlarr.lab
+## 🧰 Poznámky
+- Každá aplikace je dostupná přes interní DNS název (např. `http://sonarr.lab`).
+- Traefik poskytuje reverzní proxy a správu DNS směrování.
+- VPN Gluetun chrání síťový provoz všech služeb běžících v síti `gluetun-net`.
 
-🧠 Poznámka k DNS (Pi-hole)
+---
 
-Pokud používáte Pi-hole jako DNS server, přidejte do /etc/hosts (nebo přímo do Pi-hole DNS records) následující záznamy:
-
-192.168.x.x sonarr.lab
-192.168.x.x radarr.lab
-192.168.x.x prowlarr.lab
-192.168.x.x overseerr.lab
-192.168.x.x traefik.lab
-192.168.x.x bazarr.lab
-192.168.x.x sabnzbd.lab
-
-Požadavky
-
-Docker & Docker Compose (v2+)
-
-Funkční Pi-hole (volitelné)
-
-VPN účet (např. Surfshark, Mullvad apod.)
-
-64bit Linux / macOS systém
-
-
-📜 Licence
-
-MIT License © 2025
-Vytvořeno jako open-source domácí media stack s důrazem na bezpečnost a přehlednost.
-
-
-
+## 🧠 Doporučení
+- Pro produkční použití je vhodné uložit citlivé údaje do `.env` souboru, který nebude součástí repozitáře (`.gitignore`).
+- Pokud používáš Pi-hole i jako DHCP server, doménové názvy budou dostupné automaticky.

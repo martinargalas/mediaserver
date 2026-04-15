@@ -1,0 +1,282 @@
+{
+ "clientId": "YOUR_SEERR_CLIENT_ID",
+ "vapidPrivate": "YOUR_VAPID_PRIVATE_KEY",
+ "vapidPublic": "YOUR_VAPID_PUBLIC_KEY",
+ "main": {
+  "apiKey": "YOUR_SEERR_API_KEY",
+  "applicationTitle": "Seerr",
+  "applicationUrl": "",
+  "cacheImages": false,
+  "defaultPermissions": 32,
+  "defaultQuotas": {
+   "movie": {},
+   "tv": {}
+  },
+  "hideAvailable": false,
+  "hideBlocklisted": false,
+  "localLogin": true,
+  "mediaServerLogin": true,
+  "newPlexLogin": true,
+  "discoverRegion": "",
+  "streamingRegion": "",
+  "originalLanguage": "",
+  "blocklistedTags": "",
+  "blocklistedTagsLimit": 50,
+  "mediaServerType": 1,
+  "partialRequestsEnabled": true,
+  "enableSpecialEpisodes": false,
+  "locale": "en",
+  "youtubeUrl": ""
+ },
+ "plex": {
+  "name": "Martin – Mac mini",
+  "ip": "192.168.4.99",
+  "port": 32400,
+  "useSsl": false,
+  "libraries": [
+   {
+    "id": "2",
+    "name": "Filmy",
+    "enabled": true,
+    "type": "movie",
+    "lastScan": 1776256200074
+   },
+   {
+    "id": "1",
+    "name": "Seriály",
+    "enabled": true,
+    "type": "show",
+    "lastScan": 1776256200086
+   }
+  ],
+  "machineId": "YOUR_PLEX_MACHINE_ID"
+ },
+ "jellyfin": {
+  "name": "",
+  "ip": "",
+  "port": 8096,
+  "useSsl": false,
+  "urlBase": "",
+  "externalHostname": "",
+  "jellyfinForgotPasswordUrl": "",
+  "libraries": [],
+  "serverId": "",
+  "apiKey": ""
+ },
+ "tautulli": {},
+ "metadataSettings": {
+  "tv": "tmdb",
+  "anime": "tmdb"
+ },
+ "radarr": [
+  {
+   "name": "radarr",
+   "hostname": "192.168.4.99",
+   "port": 7878,
+   "apiKey": "YOUR_RADARR_API_KEY",
+   "useSsl": false,
+   "baseUrl": "",
+   "activeProfileId": 6,
+   "activeProfileName": "HD - 720p/1080p",
+   "activeDirectory": "/movies",
+   "is4k": false,
+   "minimumAvailability": "released",
+   "tags": [],
+   "isDefault": false,
+   "syncEnabled": false,
+   "preventSearch": false,
+   "tagRequests": false,
+   "id": 0
+  }
+ ],
+ "sonarr": [
+  {
+   "name": "sonarr",
+   "hostname": "192.168.4.99",
+   "port": 8989,
+   "apiKey": "YOUR_SONARR_API_KEY",
+   "useSsl": false,
+   "activeProfileId": 6,
+   "activeProfileName": "HD - 720p/1080p",
+   "activeDirectory": "/tv",
+   "tags": [],
+   "animeTags": [],
+   "is4k": false,
+   "isDefault": false,
+   "enableSeasonFolders": false,
+   "syncEnabled": false,
+   "preventSearch": false,
+   "tagRequests": false,
+   "id": 0
+  }
+ ],
+ "public": {
+  "initialized": true
+ },
+ "notifications": {
+  "agents": {
+   "email": {
+    "enabled": false,
+    "embedPoster": true,
+    "options": {
+     "userEmailRequired": false,
+     "emailFrom": "",
+     "smtpHost": "",
+     "smtpPort": 587,
+     "secure": false,
+     "ignoreTls": false,
+     "requireTls": false,
+     "allowSelfSigned": false,
+     "senderName": "Seerr"
+    }
+   },
+   "discord": {
+    "enabled": false,
+    "embedPoster": true,
+    "types": 0,
+    "options": {
+     "webhookUrl": "",
+     "webhookRoleId": "",
+     "enableMentions": true
+    }
+   },
+   "slack": {
+    "enabled": false,
+    "embedPoster": true,
+    "types": 0,
+    "options": {
+     "webhookUrl": ""
+    }
+   },
+   "telegram": {
+    "enabled": false,
+    "embedPoster": true,
+    "types": 0,
+    "options": {
+     "botAPI": "",
+     "chatId": "",
+     "messageThreadId": "",
+     "sendSilently": false
+    }
+   },
+   "pushbullet": {
+    "enabled": false,
+    "embedPoster": false,
+    "types": 0,
+    "options": {
+     "accessToken": ""
+    }
+   },
+   "pushover": {
+    "enabled": false,
+    "embedPoster": true,
+    "types": 0,
+    "options": {
+     "accessToken": "",
+     "userToken": "",
+     "sound": ""
+    }
+   },
+   "webhook": {
+    "enabled": true,
+    "embedPoster": true,
+    "types": 4062,
+    "options": {
+     "webhookUrl": "YOUR_WEBHOOK_URL",
+     "jsonPayload": "IntcIm5vdGlmaWNhdGlvbl90eXBlXCI6XCJ7e25vdGlmaWNhdGlvbl90eXBlfX1cIixcInN1YmplY3RcIjpcInt7c3ViamVjdH19XCIsXCJtZXNzYWdlXCI6XCJ7e21lc3NhZ2V9fVwiLFwiaW1hZ2VcIjpcInt7aW1hZ2V9fVwiLFwie3ttZWRpYX19XCI6e1wibWVkaWFfdHlwZVwiOlwie3ttZWRpYV90eXBlfX1cIixcInRtZGJfaWRcIjpcInt7bWVkaWFfdG1kYmlkfX1cIixcInR2ZGJfaWRcIjpcInt7bWVkaWFfdHZkYmlkfX1cIixcInN0YXR1c1wiOlwie3ttZWRpYV9zdGF0dXN9fVwiLFwic3RhdHVzNGtcIjpcInt7bWVkaWFfc3RhdHVzNGt9fVwifSxcInt7cmVxdWVzdH19XCI6e1wicmVxdWVzdF9pZFwiOlwie3tyZXF1ZXN0X2lkfX1cIixcInJlcXVlc3RlZF9ieV9lbWFpbFwiOlwie3tyZXF1ZXN0ZWRCeV9lbWFpbH19XCIsXCJyZXF1ZXN0ZWRfYnlfdXNlcm5hbWVcIjpcInt7cmVxdWVzdGVkQnlfdXNlcm5hbWV9fVwiLFwicmVxdWVzdGVkX2J5X2F2YXRhclwiOlwie3tyZXF1ZXN0ZWRCeV9hdmF0YXJ9fVwiLFwicmVxdWVzdGVkX2J5X3NldHRpbmdzX2Rpc2NvcmRfaWRcIjpcInt7cmVxdWVzdGVkQnlfc2V0dGluZ3NfZGlzY29yZElkfX1cIixcInJlcXVlc3RlZF9ieV9zZXR0aW5nc190ZWxlZ3JhbV9jaGF0X2lkXCI6XCJ7e3JlcXVlc3RlZEJ5X3NldHRpbmdzX3RlbGVncmFtQ2hhdElkfX1cIn0sXCJ7e2lzc3VlfX1cIjp7XCJpc3N1ZV9pZFwiOlwie3tpc3N1ZV9pZH19XCIsXCJpc3N1ZV90eXBlXCI6XCJ7e2lzc3VlX3R5cGV9fVwiLFwiaXNzdWVfc3RhdHVzXCI6XCJ7e2lzc3VlX3N0YXR1c319XCIsXCJyZXBvcnRlZF9ieV9lbWFpbFwiOlwie3tyZXBvcnRlZEJ5X2VtYWlsfX1cIixcInJlcG9ydGVkX2J5X3VzZXJuYW1lXCI6XCJ7e3JlcG9ydGVkQnlfdXNlcm5hbWV9fVwiLFwicmVwb3J0ZWRfYnlfYXZhdGFyXCI6XCJ7e3JlcG9ydGVkQnlfYXZhdGFyfX1cIixcInJlcG9ydGVkX2J5X3NldHRpbmdzX2Rpc2NvcmRfaWRcIjpcInt7cmVwb3J0ZWRCeV9zZXR0aW5nc19kaXNjb3JkSWR9fVwiLFwicmVwb3J0ZWRfYnlfc2V0dGluZ3NfdGVsZWdyYW1fY2hhdF9pZFwiOlwie3tyZXBvcnRlZEJ5X3NldHRpbmdzX3RlbGVncmFtQ2hhdElkfX1cIn0sXCJ7e2NvbW1lbnR9fVwiOntcImNvbW1lbnRfbWVzc2FnZVwiOlwie3tjb21tZW50X21lc3NhZ2V9fVwiLFwiY29tbWVudGVkX2J5X2VtYWlsXCI6XCJ7e2NvbW1lbnRlZEJ5X2VtYWlsfX1cIixcImNvbW1lbnRlZF9ieV91c2VybmFtZVwiOlwie3tjb21tZW50ZWRCeV91c2VybmFtZX19XCIsXCJjb21tZW50ZWRfYnlfYXZhdGFyXCI6XCJ7e2NvbW1lbnRlZEJ5X2F2YXRhcn19XCIsXCJjb21tZW50ZWRfYnlfc2V0dGluZ3NfZGlzY29yZF9pZFwiOlwie3tjb21tZW50ZWRCeV9zZXR0aW5nc19kaXNjb3JkSWR9fVwiLFwiY29tbWVudGVkX2J5X3NldHRpbmdzX3RlbGVncmFtX2NoYXRfaWRcIjpcInt7Y29tbWVudGVkQnlfc2V0dGluZ3NfdGVsZWdyYW1DaGF0SWR9fVwifX0i",
+     "supportVariables": false
+    }
+   },
+   "webpush": {
+    "enabled": false,
+    "embedPoster": true,
+    "options": {}
+   },
+   "gotify": {
+    "enabled": false,
+    "embedPoster": false,
+    "types": 0,
+    "options": {
+     "url": "",
+     "token": "",
+     "priority": 0
+    }
+   },
+   "ntfy": {
+    "enabled": false,
+    "embedPoster": true,
+    "types": 0,
+    "options": {
+     "url": "",
+     "topic": ""
+    }
+   }
+  }
+ },
+ "jobs": {
+  "plex-recently-added-scan": {
+   "schedule": "0 */5 * * * *"
+  },
+  "plex-full-scan": {
+   "schedule": "0 0 3 * * *"
+  },
+  "plex-watchlist-sync": {
+   "schedule": "0 */3 * * * *"
+  },
+  "plex-refresh-token": {
+   "schedule": "0 0 5 * * *"
+  },
+  "radarr-scan": {
+   "schedule": "0 0 4 * * *"
+  },
+  "sonarr-scan": {
+   "schedule": "0 30 4 * * *"
+  },
+  "availability-sync": {
+   "schedule": "0 0 5 * * *"
+  },
+  "download-sync": {
+   "schedule": "0 * * * * *"
+  },
+  "download-sync-reset": {
+   "schedule": "0 0 1 * * *"
+  },
+  "jellyfin-recently-added-scan": {
+   "schedule": "0 */5 * * * *"
+  },
+  "jellyfin-full-scan": {
+   "schedule": "0 0 3 * * *"
+  },
+  "image-cache-cleanup": {
+   "schedule": "0 0 5 * * *"
+  },
+  "process-blocklisted-tags": {
+   "schedule": "0 30 1 */7 * *"
+  }
+ },
+ "network": {
+  "csrfProtection": false,
+  "forceIpv4First": false,
+  "trustProxy": false,
+  "proxy": {
+   "enabled": false,
+   "hostname": "",
+   "port": 8080,
+   "useSsl": false,
+   "user": "",
+   "password": "",
+   "bypassFilter": "",
+   "bypassLocalAddresses": true
+  },
+  "dnsCache": {
+   "enabled": false,
+   "forceMinTtl": 0,
+   "forceMaxTtl": -1
+  },
+  "apiRequestTimeout": 10000
+ },
+ "migrations": [
+  "0007_migrate_arr_tags",
+  "0008_migrate_blacklist_to_blocklist"
+ ]
+}

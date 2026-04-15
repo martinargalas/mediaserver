@@ -1,0 +1,56 @@
+# Runtime / logs
+*.log
+*.log.*
+*/log/
+*/logs/
+
+# Databases
+*.db
+*.db-wal
+*.db-shm
+
+# Cache
+*/cache/
+*/Cache/
+
+# Backups
+*/backup/
+
+# Media covers & thumbnails
+*/MediaCover/
+*/MediaImages/
+
+# Prowlarr indexer definitions (auto-downloaded)
+prowlarr/Definitions/
+
+# ASP.NET DataProtection keys (auto-regenerated)
+*/asp/
+
+# Socket files
+ipc-socket
+
+# Gluetun (VPN config with certificates)
+gluetun/
+
+# Environment variables (obsahují citlivá data)
+.env
+
+# macOS
+.DS_Store
+
+# qBittorrent runtime
+*/BT_backup/
+*/GeoDB/
+
+# Subsonic transcoder binaries
+subsonic/transcode/
+
+# Bazarr
+bazarr/cache/
+bazarr/db/
+
+# Pids
+*.pid
+
+# Backup files
+*.bak
